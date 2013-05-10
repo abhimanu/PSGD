@@ -16,7 +16,7 @@ import org.apache.hadoop.util.*;
 
 import org.apache.hadoop.filecache.*;
 
-public class PSGDRandomSplitter extends Configured implements Tool  {
+public class PSGDCombiner extends Configured implements Tool  {
 
 	public int run (String[] args) throws Exception {
 		for(int i = 0; i < args.length; i++){
@@ -40,8 +40,12 @@ public class PSGDRandomSplitter extends Configured implements Tool  {
 			return -1;
 		}
 
-/*		
- *		args[0] = d
+/*
+ *
+ *
+ *
+ *		d=1		// just one reducer for combining the results
+ *		args[0] = dprev	//previous number of reducers
  *		args[1] = job-name
  *		args[2] = input-path
  *		args[3] = output-path
@@ -56,27 +60,27 @@ public class PSGDRandomSplitter extends Configured implements Tool  {
 //		int rank = Integer.parseInt(args[1]);
 
 
-		int iter = 1;
-		for(int i = 0; i < iter; i++) {
-			System.out.println("Sub-iteration " + i);
 
-			int d = Integer.parseInt(args[0]);
-			JobConf conf = getJobInstance(args[1], d);
-			FileSystem fs = FileSystem.get(conf);
+		int dPrev = Integer.parseInt(args[0]);
+		JobConf conf = getJobInstance(args[1], 1);		// just one reducer
+		FileSystem fs = FileSystem.get(conf);
 
-			conf.setInt("psgd.d", d);
+		conf.setInt("psgd.dPrev", dPrev);
 
-			FileInputFormat.addInputPath(conf, new Path(args[2])); 
-			conf.setStrings("psgd.outputPath", args[3]);
-			
-			if(args.length>4)
-				conf.setStrings("psgd.prevPath", args[4]);
-			else
-				conf.setStrings("psgd.prevPath","");
+		for(int i=1; i<=dPrev; i++)						// assuming that input path is runi 
+			FileInputFormat.addInputPath(conf, new Path(args[2]+"/data"+i)); 
 
-			RunningJob job = JobClient.runJob(conf);
+		conf.setStrings("psgd.outputPath", args[3]);	// this output path will be .../runi/data
 
-		}	
+//		Previous path not needed for combiner.
+
+//		if(args.length>4)
+//			conf.setStrings("psgd.prevPath", args[4]);
+//		else
+//			conf.setStrings("psgd.prevPath","");
+
+		RunningJob job = JobClient.runJob(conf);
+
 
 		return 0;
 	}
@@ -94,12 +98,12 @@ public class PSGDRandomSplitter extends Configured implements Tool  {
 	}
 
 	public JobConf getJobInstance(String sub, int d) {
-		JobConf conf = new JobConf(getConf(), PSGDRandomSplitter.class); 
+		JobConf conf = new JobConf(getConf(), PSGDCombiner.class); 
 		conf.setJobName("PSGD-"+sub);
 
 //		if(!isPaired) conf.setMapperClass(DSGDMapper.class); 
-		conf.setMapperClass(PSGDSplitterMapper.class); 
-		conf.setReducerClass(PSGDSplitterReducer.class);
+		conf.setMapperClass(PSGDCombinerMapper.class); 
+		conf.setReducerClass(PSGDCombinerReducer.class);
 
 		conf.setInputFormat(KeyValueTextInputFormat.class);
 		//conf.setOutputFormat(TensorMultipleOutputFormat.class);
@@ -131,7 +135,7 @@ public class PSGDRandomSplitter extends Configured implements Tool  {
 	 * dsgd.rank rank of matrix (dimension of U and V)
 	 */
 	public static void main(String[] args) throws Exception {
-		int exitCode = ToolRunner.run(new PSGDRandomSplitter(), args);
+		int exitCode = ToolRunner.run(new PSGDCombiner(), args);
 		System.exit(exitCode); 
 	}
 

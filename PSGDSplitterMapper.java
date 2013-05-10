@@ -16,21 +16,10 @@ import org.apache.hadoop.util.*;
 import org.apache.hadoop.filecache.*;
 
 public class PSGDSplitterMapper extends MapReduceBase implements Mapper<Text, Text, IntWritable, FloatArray> {
-	int s = 0;
-    int N = 0;
-    int M = 0;
-    int P = 0;
     int d = 0;
-	int dN = 0;
-	int dM = 0;
-	int dP = 0;
-	int rank;
-
-//	boolean is2D;
 	
 	Random randomGen = new Random();
 
-	int dataSet = 0;
 
 	public void configure(JobConf job) {
 

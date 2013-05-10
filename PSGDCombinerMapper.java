@@ -15,27 +15,16 @@ import org.apache.hadoop.util.*;
 
 import org.apache.hadoop.filecache.*;
 
-public class PSGDSplitterMapper extends MapReduceBase implements Mapper<Text, Text, IntWritable, FloatArray> {
-	int s = 0;
-    int N = 0;
-    int M = 0;
-    int P = 0;
-    int d = 0;
-	int dN = 0;
-	int dM = 0;
-	int dP = 0;
-	int rank;
-
-//	boolean is2D;
+public class PSGDCombinerMapper extends MapReduceBase implements Mapper<Text, Text, IntWritable, FloatArray> {
+//    int d = 1;	// not needed
 	
 	Random randomGen = new Random();
 
-	int dataSet = 0;
 
 	public void configure(JobConf job) {
 
 
-		d = job.getInt("psgd.d", 1);
+		//d = job.getInt("psgd.d", 1);
 
 	}
 
@@ -59,17 +48,14 @@ public class PSGDSplitterMapper extends MapReduceBase implements Mapper<Text, Te
 		// Load from key/values
 		int i = 0; 
 		int j = 0; 
-//		int k = 0; 
+		int k = 0; 
 		float val = 0;
 		try {
-			i = Integer.parseInt(vals[0]); 
+			i = (int)(vals[0].charAt(0)); 
 			j = Integer.parseInt(vals[1]); 
+			k = Integer.parseInt(vals[2]); 
 
-			val = Float.parseFloat(vals[2]);
-//			if(!is2D) {
-//				k = Integer.parseInt(vals[2]);
-//				val = Float.parseFloat(vals[3]); 
-//   		}
+			val = Float.parseFloat(vals[3]);
 		} catch (Exception e) {
 			System.out.println("Error on input: ");
 			System.out.println("Key: " + key.toString());
@@ -77,14 +63,12 @@ public class PSGDSplitterMapper extends MapReduceBase implements Mapper<Text, Te
 			return;
 		}
 
-		int keyVal = randomGen.nextInt(d)+1;
-		IntWritable newkey = new IntWritable(keyVal);
-		FloatArray newvalue = new FloatArray(new float[]{i,j,val});
+//		int keyVal = randomGen.nextInt(d)+1;
+		IntWritable newkey = new IntWritable(i);
+		FloatArray newvalue = new FloatArray(new float[]{j,k,val});
 
 		output.collect(newkey, newvalue);
 		reporter.incrCounter("PSGD", "Number Passed", 1);
-		reporter.incrCounter("PSGD", "Number Passed-"+dataSet, 1);
-//		}
 
 		reporter.incrCounter("PSGD", "Number Total", 1);
 

@@ -23,6 +23,15 @@ public class DenseTensor implements Tensor {
 		iter = -1;
 		reset();
 	}
+	
+	public DenseTensor(int n, int m, int p, float val) {
+		N = n;
+		M = m;
+		P = p;
+		data = new float[N][M][P];
+		iter = -1;
+		reset(val);
+	}
 
 	public float get(int i, int j) {
 		return get(i,j,0);
@@ -62,4 +71,17 @@ public class DenseTensor implements Tensor {
 		}
 
 	}
+
+	public void reset(float val) {
+
+		for(int i = 0; i < N; i++) {
+			for(int j = 0; j < M; j++) {
+				for(int k = 0; k < P; k++) {
+					data[i][j][k] = val;
+				}
+			}
+		}
+	}
+
+
 }

@@ -14,13 +14,13 @@ import org.apache.hadoop.util.*;
 
 import org.apache.hadoop.filecache.*;
 
-public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWritable, FloatArray, NullWritable, NullWritable> {
+public class PSGDCombinerReducer extends MapReduceBase implements Reducer<IntWritable, FloatArray, NullWritable, NullWritable> {
 
-	int d;
+	int dPrev;
 	int M;
 	int N;
 	int rank;
-    float stepSize;
+//    float stepSize;
 	
 	DenseTensor U,V;
 
@@ -38,17 +38,18 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 
 		thisjob = job;
 
-		outputPath = job.getStrings("psgd.outputPath")[0];					// contains till runi
-		prevPath = job.getStrings("psgd.prevPath", new String[]{""})[0];	// contains till runi
+		outputPath = job.getStrings("psgd.outputPath")[0];					// contains till runi/data/
+		prevPath = job.getStrings("psgd.prevPath", new String[]{""})[0];	// dont need this
 
 
-
-		d = job.getInt("psgd.d", 1);
+		dPrev = job.getInt("psgd.dPrev", 1);
 		M = job.getInt("psgd.M", 1);		// first dimension
 		N = job.getInt("psgd.N", 1);		// second dimension
 		rank = job.getInt("psgd.rank",1);
-		stepSize = job.getFloat("psgd.stepSize",0.00001f);
+//		stepSize = job.getFloat("psgd.stepSize",0.00001f);
 
+		U = new DenseTensor(M,rank,1,0);	// TODO: Dont reset, wastage of time
+		V = new DenseTensor(N,rank,1,0);	// TODO:
 
 
 		taskId = getAttemptId(job);
@@ -108,9 +109,16 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 		final Reporter reporter
 	) throws IOException { 
 
-		System.out.println("Key: " + key.toString());
-		U = new DenseTensor(M,rank);	// TODO: Dont reset, wastage of time
-		V = new DenseTensor(N,rank);	// TODO:
+		System.out.println("Key: " + (char)key.get());
+
+		DenseTensor T;
+		
+		char c = (char) key.get();
+		if(c=='U')
+			T = U;
+		else
+			T = V;
+
 
 //		FileSystem fs = FileSystem.get(thisjob);
 //		String path  = outputPath + "/data/"+"log."+taskId;
@@ -126,6 +134,9 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 		while(values.hasNext()) {	// write the partitioned data
 
 			FloatArray v = values.next();
+//			System.out.println("Key: " + key.toString()+ "   Vals: " + v.toString());
+			
+
 
 			int i = (int)(v.ar[0]);
 			int j = (int)(v.ar[1]);
@@ -136,38 +147,37 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 				System.out.println(v.toString());
 			}
 			
-			String valStr = i+"\t"+j+"\t"+val+"\n";
+//			String valStr = i+"\t"+j+"\t"+val+"\n";
 
 //			out.writeBytes(valStr);
 
-			float coeff = getGradient(i,j,val);
 //			out.writeBytes(valStr);
 
-			float[] U_i = new float[rank];
-			float[] V_j = new float[rank];
-
-   		for(int r=0;r<rank;r++){
-				U_i[r] = U.get(i,r);
-				V_j[r] = V.get(j,r);
-			}
 
 			reporter.progress();
 
-			for(int r=0;r<rank;r++){
-				setGradient(U,i,r, coeff, V_j);
-				setGradient(V,j,r, coeff, U_i);
-			}
-
+			T.set(i,j,T.get(i,j)+val);
 
 
 			reporter.incrCounter("PSGD", "Number Processed", 1);
 		}
+		
+        // Nomalize the values
+//		float val = T.get(key.ar[1],key.ar[2])*1.0/dPrev;
+//		T.set(key.ar[1],key.ar[2],val);
+
+        for(int i=0; i<T.N; i++){
+			for(int j=0; j<T.M; j++){
+				float val = T.get(i,j)*1.0f/dPrev;
+				T.set(i,j,val);
+			}
+			reporter.progress();
+		}
 
 		System.out.println("Last batch: " );
 //		Write Every thing in the end
-		String writePath = outputPath + "/data"+key.toString();
-		rwClass.writeFactors('U', U, thisjob, writePath, taskId, reporter);
-		rwClass.writeFactors('V', V, thisjob, writePath, taskId, reporter);
+		String writePath = outputPath;			// outputPath contains runi/data
+		rwClass.writeFactors(c, T, thisjob, writePath, taskId, reporter);
 
 //		fs.close();
 
@@ -175,33 +185,6 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 
 	}
 
-	private float getGradient(int i, int j, float val){
-		float sum = 0;
-		for(int r=0;r<rank;r++) {
-			float prod = U.get(i, r)*V.get(j, r); 
-			sum+=prod;
-		}
-		if(Float.isNaN(sum) || Float.isInfinite(sum)){
-			System.out.println("getGradient sum NaN: " + sum);
-		}
-		return -2.0f*(val-sum);
-	}
-
-
-	private void setGradient(DenseTensor M, int i, int r, double coeff, float[] M1) {
-		float newVal = (float)(M.get(i, r) - stepSize * coeff * M1[r] );
-		
-		if(Float.isNaN(newVal) || Float.isInfinite(newVal)) { 
-			System.out.print("newVal NaN: ");
-			System.out.println(i + ", " + r + ", " + coeff + ": " + newVal);
-		}
-
-//		if(sparse) {
-//			newVal = softThreshold(newVal,lambda * stepSize);
-//		}
-
-		M.set(i, r, newVal);
-	}
 
 }
 
