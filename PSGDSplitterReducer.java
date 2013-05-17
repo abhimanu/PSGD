@@ -44,10 +44,12 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 
 
 		d = job.getInt("psgd.d", 1);
-		M = job.getInt("psgd.M", 1);		// first dimension
-		N = job.getInt("psgd.N", 1);		// second dimension
+		M = job.getInt("psgd.M", 1);		// second dimension
+		N = job.getInt("psgd.N", 1);		// first dimension
 		rank = job.getInt("psgd.rank",1);
 		stepSize = job.getFloat("psgd.stepSize",0.00001f);
+
+		System.out.println("d M N rank stepSize"+" "+M+" "+N+" "+rank+" "+stepSize);
 
 
 
@@ -109,8 +111,8 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 	) throws IOException { 
 
 		System.out.println("Key: " + key.toString());
-		U = new DenseTensor(M,rank);	// TODO: Dont reset, wastage of time
-		V = new DenseTensor(N,rank);	// TODO:
+		U = new DenseTensor(N,rank);	// TODO: Dont reset, wastage of time
+		V = new DenseTensor(M,rank);	// TODO:
 
 //		FileSystem fs = FileSystem.get(thisjob);
 //		String path  = outputPath + "/data/"+"log."+taskId;
@@ -121,6 +123,7 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 		if(prevPath!=""){
 			rwClass.getGlobalValue('U', U, thisjob, prevPath);	// this method only read prev global vals
 			rwClass.getGlobalValue('V', V, thisjob, prevPath);
+			System.out.println("Splitter reading from previous U and V");
 		}
 		
 		while(values.hasNext()) {	// write the partitioned data

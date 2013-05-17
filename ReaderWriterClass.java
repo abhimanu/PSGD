@@ -32,6 +32,7 @@ public class ReaderWriterClass {
 	public boolean getGlobalValue(char c, DenseTensor T, JobConf thisjob, String prevPath) throws IOException{
 		FileSystem fs = FileSystem.get(thisjob);
 		String path = prevPath + "/data/"+c;
+		System.out.println("In getGlobalValue");
 		FileStatus[] allFiles = fs.globStatus(new Path(path+".*"));   
 		if(allFiles!=null && allFiles.length >0){
 			for(FileStatus f: allFiles){

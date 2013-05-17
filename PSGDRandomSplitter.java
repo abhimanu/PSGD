@@ -66,6 +66,8 @@ public class PSGDRandomSplitter extends Configured implements Tool  {
 
 			conf.setInt("psgd.d", d);
 
+            System.out.println("reducer d "+d);
+
 			FileInputFormat.addInputPath(conf, new Path(args[2])); 
 			conf.setStrings("psgd.outputPath", args[3]);
 			
@@ -95,7 +97,7 @@ public class PSGDRandomSplitter extends Configured implements Tool  {
 
 	public JobConf getJobInstance(String sub, int d) {
 		JobConf conf = new JobConf(getConf(), PSGDRandomSplitter.class); 
-		conf.setJobName("PSGD-"+sub);
+		conf.setJobName("splitter-"+sub);
 
 //		if(!isPaired) conf.setMapperClass(DSGDMapper.class); 
 		conf.setMapperClass(PSGDSplitterMapper.class); 

@@ -43,13 +43,13 @@ public class PSGDCombinerReducer extends MapReduceBase implements Reducer<IntWri
 
 
 		dPrev = job.getInt("psgd.dPrev", 1);
-		M = job.getInt("psgd.M", 1);		// first dimension
-		N = job.getInt("psgd.N", 1);		// second dimension
+		M = job.getInt("psgd.M", 1);		// second dimension
+		N = job.getInt("psgd.N", 1);		// first dimension
 		rank = job.getInt("psgd.rank",1);
 //		stepSize = job.getFloat("psgd.stepSize",0.00001f);
 
-		U = new DenseTensor(M,rank,1,0);	// TODO: Dont reset, wastage of time
-		V = new DenseTensor(N,rank,1,0);	// TODO:
+		U = new DenseTensor(N,rank,1,0);	// TODO: Dont reset, wastage of time
+		V = new DenseTensor(M,rank,1,0);	// TODO:
 
 
 		taskId = getAttemptId(job);

@@ -25,6 +25,7 @@ public class PSGDSplitterMapper extends MapReduceBase implements Mapper<Text, Te
 
 
 		d = job.getInt("psgd.d", 1);
+		System.out.println("Mapper d "+d);
 
 	}
 
