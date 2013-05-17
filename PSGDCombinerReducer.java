@@ -38,7 +38,7 @@ public class PSGDCombinerReducer extends MapReduceBase implements Reducer<IntWri
 
 		thisjob = job;
 
-		outputPath = job.getStrings("psgd.outputPath")[0];					// contains till runi/data/
+		outputPath = job.getStrings("psgd.outputPath")[0];					// contains till runi/data
 		prevPath = job.getStrings("psgd.prevPath", new String[]{""})[0];	// dont need this
 
 
@@ -126,10 +126,12 @@ public class PSGDCombinerReducer extends MapReduceBase implements Reducer<IntWri
 
         // read previous global U and V
 		ReaderWriterClass rwClass = new ReaderWriterClass();
-		if(prevPath!=""){
-			rwClass.getPreviousValue('U', U, thisjob, prevPath);	// this method only read prev global vals
-			rwClass.getPreviousValue('V', V, thisjob, prevPath);
-		}
+		
+		// We dont need previous global values
+//		if(prevPath!=""){
+//			rwClass.getPreviousValue('U', U, thisjob, prevPath);	// this method only read prev global vals
+//			rwClass.getPreviousValue('V', V, thisjob, prevPath);
+//		}
 		
 		while(values.hasNext()) {	// write the partitioned data
 

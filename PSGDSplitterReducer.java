@@ -86,7 +86,7 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
 	 *
 	*/
 
-//	public boolean getPreviousValue(char c, DenseTensor T, JobConf thisjob, String prevPath)
+//	public boolean getGlobalValue(char c, DenseTensor T, JobConf thisjob, String prevPath)
 
     /*
 	 *
@@ -119,8 +119,8 @@ public class PSGDSplitterReducer extends MapReduceBase implements Reducer<IntWri
         // read previous global U and V
 		ReaderWriterClass rwClass = new ReaderWriterClass();
 		if(prevPath!=""){
-			rwClass.getPreviousValue('U', U, thisjob, prevPath);	// this method only read prev global vals
-			rwClass.getPreviousValue('V', V, thisjob, prevPath);
+			rwClass.getGlobalValue('U', U, thisjob, prevPath);	// this method only read prev global vals
+			rwClass.getGlobalValue('V', V, thisjob, prevPath);
 		}
 		
 		while(values.hasNext()) {	// write the partitioned data

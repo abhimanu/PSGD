@@ -29,7 +29,7 @@ public class ReaderWriterClass {
 	*/
 	
 	// This method only reads previosu global vals
-	public boolean getPreviousValue(char c, DenseTensor T, JobConf thisjob, String prevPath) throws IOException{
+	public boolean getGlobalValue(char c, DenseTensor T, JobConf thisjob, String prevPath) throws IOException{
 		FileSystem fs = FileSystem.get(thisjob);
 		String path = prevPath + "/data/"+c;
 		FileStatus[] allFiles = fs.globStatus(new Path(path+".*"));   

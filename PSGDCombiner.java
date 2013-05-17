@@ -67,7 +67,7 @@ public class PSGDCombiner extends Configured implements Tool  {
 
 		conf.setInt("psgd.dPrev", dPrev);
 
-		for(int i=1; i<=dPrev; i++)						// assuming that input path is runi 
+		for(int i=1; i<=dPrev; i++)						// assuming that input path is runi <= is necesary 
 			FileInputFormat.addInputPath(conf, new Path(args[2]+"/data"+i)); 
 
 		conf.setStrings("psgd.outputPath", args[3]);	// this output path will be .../runi/data
@@ -120,7 +120,7 @@ public class PSGDCombiner extends Configured implements Tool  {
 		conf.setOutputKeyClass(Text.class); 
 		conf.setOutputValueClass(Text.class);
 
-		conf.setNumReduceTasks(d);
+		conf.setNumReduceTasks(d);				// d is always passed as 1
 
 		return conf;
 	}

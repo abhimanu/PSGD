@@ -72,7 +72,6 @@ public class PSGDSplitterMapper extends MapReduceBase implements Mapper<Text, Te
 
 		output.collect(newkey, newvalue);
 		reporter.incrCounter("PSGD", "Number Passed", 1);
-		reporter.incrCounter("PSGD", "Number Passed-"+dataSet, 1);
 //		}
 
 		reporter.incrCounter("PSGD", "Number Total", 1);
